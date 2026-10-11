@@ -1,5 +1,7 @@
 
 import java.util.Random;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class Main {
 
@@ -117,6 +119,7 @@ public class Main {
                 if (current.key == key) {
                     return;
                 }
+
                 current = current.next;
             }
 
@@ -133,6 +136,7 @@ public class Main {
                 if (current.key == key) {
                     return true;
                 }
+
                 current = current.next;
             }
 
@@ -151,6 +155,7 @@ public class Main {
                     } else {
                         previous.next = current.next;
                     }
+
                     return;
                 }
 
@@ -160,118 +165,143 @@ public class Main {
         }
     }
 
-
     public static void main(String[] args) {
 
         int[] sizes = {100, 1000, 10000};
         int repeats = 5;
         Random random = new Random(42);
 
-        System.out.println(
+        String header =
                 "Size,BST Insert,BST Search,BST Delete,"
-                        + "Hash Insert,Hash Search,Hash Delete"
-        );
+                        + "Hash Insert,Hash Search,Hash Delete";
 
-        for (int size : sizes) {
+        System.out.println(header);
 
-            long bstInsertTotal = 0;
-            long bstSearchTotal = 0;
-            long bstDeleteTotal = 0;
-            long hashInsertTotal = 0;
-            long hashSearchTotal = 0;
-            long hashDeleteTotal = 0;
+        try (FileWriter writer = new FileWriter("results/results.csv")) {
 
-            for (int run = 0; run < repeats; run++) {
+            writer.write(header + "\n");
 
-                int[] values = new int[size];
+            for (int size : sizes) {
 
-                for (int i = 0; i < size; i++) {
-                    values[i] = i;
-                }
+                long bstInsertTotal = 0;
+                long bstSearchTotal = 0;
+                long bstDeleteTotal = 0;
+                long hashInsertTotal = 0;
+                long hashSearchTotal = 0;
+                long hashDeleteTotal = 0;
 
-                // Shuffle the values
-                for (int i = size - 1; i > 0; i--) {
-                    int j = random.nextInt(i + 1);
+                for (int run = 0; run < repeats; run++) {
 
-                    int temp = values[i];
-                    values[i] = values[j];
-                    values[j] = temp;
-                }
+                    int[] values = new int[size];
 
-                BST bst = new BST();
-                HashTable hashTable = new HashTable(size / 2 + 1);
-
-                // BST insertion
-                long start = System.nanoTime();
-
-                for (int value : values) {
-                    bst.insert(value);
-                }
-
-                bstInsertTotal += System.nanoTime() - start;
-
-                // BST searching
-                start = System.nanoTime();
-
-                for (int value : values) {
-                    if (!bst.search(value)) {
-                        throw new RuntimeException("BST search failed");
+                    for (int i = 0; i < size; i++) {
+                        values[i] = i;
                     }
-                }
 
-                bstSearchTotal += System.nanoTime() - start;
+                    // Shuffle values
+                    for (int i = size - 1; i > 0; i--) {
+                        int j = random.nextInt(i + 1);
 
-                // BST deletion
-                start = System.nanoTime();
-
-                for (int value : values) {
-                    bst.delete(value);
-                }
-
-                bstDeleteTotal += System.nanoTime() - start;
-
-                // Hash Table insertion
-                start = System.nanoTime();
-
-                for (int value : values) {
-                    hashTable.insert(value);
-                }
-
-                hashInsertTotal += System.nanoTime() - start;
-
-                // Hash Table searching
-                start = System.nanoTime();
-
-                for (int value : values) {
-                    if (!hashTable.search(value)) {
-                        throw new RuntimeException("Hash search failed");
+                        int temp = values[i];
+                        values[i] = values[j];
+                        values[j] = temp;
                     }
+
+                    BST bst = new BST();
+                    HashTable hashTable =
+                            new HashTable(size / 2 + 1);
+
+                    // BST insertion
+                    long start = System.nanoTime();
+
+                    for (int value : values) {
+                        bst.insert(value);
+                    }
+
+                    bstInsertTotal += System.nanoTime() - start;
+
+                    // BST searching
+                    start = System.nanoTime();
+
+                    for (int value : values) {
+                        if (!bst.search(value)) {
+                            throw new RuntimeException(
+                                    "BST search failed"
+                            );
+                        }
+                    }
+
+                    bstSearchTotal += System.nanoTime() - start;
+
+                    // BST deletion
+                    start = System.nanoTime();
+
+                    for (int value : values) {
+                        bst.delete(value);
+                    }
+
+                    bstDeleteTotal += System.nanoTime() - start;
+
+                    // Hash Table insertion
+                    start = System.nanoTime();
+
+                    for (int value : values) {
+                        hashTable.insert(value);
+                    }
+
+                    hashInsertTotal += System.nanoTime() - start;
+
+                    // Hash Table searching
+                    start = System.nanoTime();
+
+                    for (int value : values) {
+                        if (!hashTable.search(value)) {
+                            throw new RuntimeException(
+                                    "Hash Table search failed"
+                            );
+                        }
+                    }
+
+                    hashSearchTotal += System.nanoTime() - start;
+
+                    // Hash Table deletion
+                    start = System.nanoTime();
+
+                    for (int value : values) {
+                        hashTable.delete(value);
+                    }
+
+                    hashDeleteTotal += System.nanoTime() - start;
                 }
 
-                hashSearchTotal += System.nanoTime() - start;
+                long avgBstInsert = bstInsertTotal / repeats;
+                long avgBstSearch = bstSearchTotal / repeats;
+                long avgBstDelete = bstDeleteTotal / repeats;
+                long avgHashInsert = hashInsertTotal / repeats;
+                long avgHashSearch = hashSearchTotal / repeats;
+                long avgHashDelete = hashDeleteTotal / repeats;
 
-                // Hash Table deletion
-                start = System.nanoTime();
+                String result =
+                        size + ","
+                                + avgBstInsert + ","
+                                + avgBstSearch + ","
+                                + avgBstDelete + ","
+                                + avgHashInsert + ","
+                                + avgHashSearch + ","
+                                + avgHashDelete;
 
-                for (int value : values) {
-                    hashTable.delete(value);
-                }
-
-                hashDeleteTotal += System.nanoTime() - start;
+                System.out.println(result);
+                writer.write(result + "\n");
             }
 
+            System.out.println("Results saved to results/results.csv");
+
+        } catch (IOException e) {
             System.out.println(
-                    size + ","
-                            + bstInsertTotal / repeats + ","
-                            + bstSearchTotal / repeats + ","
-                            + bstDeleteTotal / repeats + ","
-                            + hashInsertTotal / repeats + ","
-                            + hashSearchTotal / repeats + ","
-                            + hashDeleteTotal / repeats
+                    "Could not save results: " + e.getMessage()
             );
         }
 
         System.out.println("All tests passed!");
     }
-
 }
