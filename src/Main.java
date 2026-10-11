@@ -187,7 +187,7 @@ public class Main {
             }
 
             BST bst = new BST();
-            HashTable hashTable = new HashTable(size * 2 + 1);
+            HashTable hashTable = new HashTable(size / 2 + 1);
 
             long start = System.nanoTime();
 
