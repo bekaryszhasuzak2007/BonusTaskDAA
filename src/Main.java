@@ -160,9 +160,11 @@ public class Main {
         }
     }
 
+
     public static void main(String[] args) {
 
         int[] sizes = {100, 1000, 10000};
+        int repeats = 5;
         Random random = new Random(42);
 
         System.out.println(
@@ -172,86 +174,104 @@ public class Main {
 
         for (int size : sizes) {
 
-            int[] values = new int[size];
+            long bstInsertTotal = 0;
+            long bstSearchTotal = 0;
+            long bstDeleteTotal = 0;
+            long hashInsertTotal = 0;
+            long hashSearchTotal = 0;
+            long hashDeleteTotal = 0;
 
-            for (int i = 0; i < size; i++) {
-                values[i] = i;
-            }
+            for (int run = 0; run < repeats; run++) {
 
-            for (int i = size - 1; i > 0; i--) {
-                int j = random.nextInt(i + 1);
+                int[] values = new int[size];
 
-                int temp = values[i];
-                values[i] = values[j];
-                values[j] = temp;
-            }
-
-            BST bst = new BST();
-            HashTable hashTable = new HashTable(size / 2 + 1);
-
-            long start = System.nanoTime();
-
-            for (int value : values) {
-                bst.insert(value);
-            }
-
-            long bstInsert = System.nanoTime() - start;
-
-            start = System.nanoTime();
-
-            for (int value : values) {
-                if (!bst.search(value)) {
-                    throw new RuntimeException("BST search failed");
+                for (int i = 0; i < size; i++) {
+                    values[i] = i;
                 }
-            }
 
-            long bstSearch = System.nanoTime() - start;
+                // Shuffle the values
+                for (int i = size - 1; i > 0; i--) {
+                    int j = random.nextInt(i + 1);
 
-            start = System.nanoTime();
-
-            for (int value : values) {
-                bst.delete(value);
-            }
-
-            long bstDelete = System.nanoTime() - start;
-
-            start = System.nanoTime();
-
-            for (int value : values) {
-                hashTable.insert(value);
-            }
-
-            long hashInsert = System.nanoTime() - start;
-
-            start = System.nanoTime();
-
-            for (int value : values) {
-                if (!hashTable.search(value)) {
-                    throw new RuntimeException("Hash search failed");
+                    int temp = values[i];
+                    values[i] = values[j];
+                    values[j] = temp;
                 }
+
+                BST bst = new BST();
+                HashTable hashTable = new HashTable(size / 2 + 1);
+
+                // BST insertion
+                long start = System.nanoTime();
+
+                for (int value : values) {
+                    bst.insert(value);
+                }
+
+                bstInsertTotal += System.nanoTime() - start;
+
+                // BST searching
+                start = System.nanoTime();
+
+                for (int value : values) {
+                    if (!bst.search(value)) {
+                        throw new RuntimeException("BST search failed");
+                    }
+                }
+
+                bstSearchTotal += System.nanoTime() - start;
+
+                // BST deletion
+                start = System.nanoTime();
+
+                for (int value : values) {
+                    bst.delete(value);
+                }
+
+                bstDeleteTotal += System.nanoTime() - start;
+
+                // Hash Table insertion
+                start = System.nanoTime();
+
+                for (int value : values) {
+                    hashTable.insert(value);
+                }
+
+                hashInsertTotal += System.nanoTime() - start;
+
+                // Hash Table searching
+                start = System.nanoTime();
+
+                for (int value : values) {
+                    if (!hashTable.search(value)) {
+                        throw new RuntimeException("Hash search failed");
+                    }
+                }
+
+                hashSearchTotal += System.nanoTime() - start;
+
+                // Hash Table deletion
+                start = System.nanoTime();
+
+                for (int value : values) {
+                    hashTable.delete(value);
+                }
+
+                hashDeleteTotal += System.nanoTime() - start;
             }
-
-            long hashSearch = System.nanoTime() - start;
-
-            start = System.nanoTime();
-
-            for (int value : values) {
-                hashTable.delete(value);
-            }
-
-            long hashDelete = System.nanoTime() - start;
 
             System.out.println(
                     size + ","
-                            + bstInsert + ","
-                            + bstSearch + ","
-                            + bstDelete + ","
-                            + hashInsert + ","
-                            + hashSearch + ","
-                            + hashDelete
+                            + bstInsertTotal / repeats + ","
+                            + bstSearchTotal / repeats + ","
+                            + bstDeleteTotal / repeats + ","
+                            + hashInsertTotal / repeats + ","
+                            + hashSearchTotal / repeats + ","
+                            + hashDeleteTotal / repeats
             );
         }
 
         System.out.println("All tests passed!");
     }
+
 }
